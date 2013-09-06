@@ -91,9 +91,9 @@ Meteor.methods({
     this.setUserId(null);
   },
 
-  // Nuke everything: delete all the user's tokens and close all open
-  // connections logged in as this user, except this connection. Returns a fresh
-  // new login token that this client can use.
+  // Nuke everything: delete all the current user's tokens and close all open
+  // connections logged in as this user. Returns a fresh new login token that
+  // this client can use.
   _logoutAllOthers: function () {
     var self = this;
     var user = Meteor.users.findOne(self.userId);
@@ -105,10 +105,9 @@ Meteor.methods({
           "services.resume.loginTokens": [newToken]
         }
       });
-      // We do not set the login token on this connection, to force the client
-      // to close this connection and open a new one with the new token.
-      // The observe on Meteor.users() will take care of closing connections
-      // with the right delay.
+      // We do not set the login token on this connection, but instead the
+      // observe closes the connection and the client will reconnect with the
+      // new token.
       return {
         token: newToken.token,
         tokenExpires: Accounts._tokenExpiration(newToken.when)
@@ -169,10 +168,17 @@ var removeLoginToken = function (userId, loginToken) {
   });
 };
 
+///
+/// TOKEN EXPIRATION
+///
+
+var expireTokenInterval;
+
 // Deletes expired tokens from the database and closes all open connections
 // associated with these tokens. Exported for tests.
 var expireTokens = Accounts._expireTokens = function (oldestValidDate) {
-  var tokenLifetime = Accounts._options._tokenLifetime || DEFAULT_TOKEN_LIFETIME;
+  var tokenLifetime = Accounts._options._tokenLifetime ||
+        DEFAULT_TOKEN_LIFETIME;
   oldestValidDate = oldestValidDate ||
     (new Date(new Date() - tokenLifetime * 1000));
   var usersWithExpiredTokens = Meteor.users.find({
@@ -203,7 +209,7 @@ var expireTokens = Accounts._expireTokens = function (oldestValidDate) {
 };
 
 Meteor.users._ensureIndex("services.resume.loginTokens.when", { sparse: true });
-var expireTokenInterval;
+
 initExpireTokenInterval = function () {
   if (expireTokenInterval)
     Meteor.clearInterval(expireTokenInterval);
