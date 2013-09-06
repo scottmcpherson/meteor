@@ -26,6 +26,10 @@ Accounts._options = {};
 // - _minTokenLifetime {Number}
 //     The minimum number of seconds until a token expires in order for the
 //     client to be willing to connect with that token.
+// - _connectionCloseDelay {Number}
+//     The number of seconds to wait before closing connections that when a user
+//     is logged out by the server. Defaults to 10, to allow clients to store a
+//     fresh token in localStorage when calling _logoutAllOthers.
 //
 Accounts.config = function(options) {
   // validate option keys
