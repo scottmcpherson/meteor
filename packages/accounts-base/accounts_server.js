@@ -525,11 +525,13 @@ Meteor.users._ensureIndex('services.resume.loginTokens.token',
 /// LOGGING OUT DELETED USERS
 ///
 
+var DEFAULT_CONNECTION_CLOSE_DELAY = 10;
+
 // By default, connections are closed with a 10 second delay, to give other
 // clients a chance to find a new token in localStorage before
 // reconnecting. Delay can be configured with Accounts.config.
 var closeTokensForUser = function (userTokens) {
-  var delay = 10;
+  var delay = DEFAULT_CONNECTION_CLOSE_DELAY;
   if (_.has(Accounts._options, "_connectionCloseDelay"))
     delay = Accounts._options._connectionCloseDelay;
   Meteor.setTimeout(function () {
