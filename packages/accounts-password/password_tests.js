@@ -1,5 +1,5 @@
 Accounts.config({
-  _connectionCloseDelay: 0
+  _connectionCloseDelaySecs: 0
 });
 
 if (Meteor.isClient) (function () {
